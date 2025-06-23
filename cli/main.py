@@ -486,7 +486,7 @@ def get_user_selections():
         return Panel(box_content, border_style="blue", padding=(1, 2))
 
     # Step 1: Get Tickers
-    ticker = get_tickers()
+    selected_ticker = get_tickers()
 
     # Step 2: Analysis date
     default_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -536,7 +536,7 @@ def get_user_selections():
     selected_deep_thinker = select_deep_thinking_agent(selected_llm_provider)
 
     return {
-        "ticker": ticker,
+        "ticker": selected_ticker,
         "analysis_date": analysis_date,
         "analysts": selected_analysts,
         "research_depth": selected_research_depth,
