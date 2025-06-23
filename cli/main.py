@@ -413,6 +413,10 @@ def get_tickers() -> str:
         ])
     ).ask()
 
+    if use_scout_answer is None:
+        console.print("\n[bold yellow]Operation cancelled by user. Exiting.[/bold yellow]")
+        raise typer.Exit()
+
     use_scout = use_scout_answer == "Yes"
 
     if use_scout:
@@ -430,8 +434,12 @@ def get_tickers() -> str:
                     ("pointer", "fg:yellow noinherit"),
                 ])
             ).ask()
-            
-            if selection and selection != "Enter manually":
+
+            if selection is None:
+                console.print("\n[bold yellow]Operation cancelled by user. Exiting.[/bold yellow]")
+                raise typer.Exit()
+
+            if selection != "Enter manually":
                 return selection
         else:
             console.print("\n[yellow]Scout didn't find any stocks matching the criteria. Please enter one manually.[/yellow]")
@@ -446,7 +454,12 @@ def get_tickers() -> str:
                 ("pointer", "fg:yellow noinherit"),
             ]),
         ).ask()
-        if ticker and ticker.strip():
+
+        if ticker is None:
+            console.print("\n[bold yellow]Operation cancelled by user. Exiting.[/bold yellow]")
+            raise typer.Exit()
+
+        if ticker.strip():
             return ticker.strip().upper()
         console.print("[bold red]No ticker symbol provided. Please enter one.[/bold red]")
 

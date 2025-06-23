@@ -1,5 +1,8 @@
 import questionary
+from rich.console import Console
 from typing import List, Optional, Tuple, Dict
+
+console = Console()
 
 from cli.models import AnalystType
 
@@ -9,9 +12,6 @@ ANALYST_ORDER = [
     ("News Analyst", AnalystType.NEWS),
     ("Fundamentals Analyst", AnalystType.FUNDAMENTALS),
 ]
-
-
-
 
 
 def get_analysis_date() -> str:
