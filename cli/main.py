@@ -623,6 +623,13 @@ def display_complete_report(final_state):
 
 
 def run_analysis():
+    # Check for API Key
+    if "OPENAI_API_KEY" not in os.environ and "FINNHUB_API_KEY" not in os.environ:
+        console.print("[bold red]Error: API keys not set.[/bold red]")
+        console.print("Please set the OPENAI_API_KEY and FINNHUB_API_KEY environment variables and try again.")
+        console.print("Example: export OPENAI_API_KEY='your_key_here'")
+        raise typer.Exit(code=1)
+
     # First get all user selections
     selections = get_user_selections()
 
