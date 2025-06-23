@@ -18,19 +18,36 @@ def run_scan(verbose: bool = False):
     Returns:
         list: A list of stock tickers that meet the scan criteria.
     """
-    # Load stock pool from the configuration file.
+    # Load and filter the stock pool based on selected sectors.
     stock_pool = []
-    # Assuming the script is run from the project root directory.
-    config_path = os.path.join("config", "stock_pool.txt")
+    sectors_path = os.path.join("config", "sectors.txt")
+    constituents_path = os.path.join("data", "sp500_constituents.csv")
 
     try:
-        with open(config_path, 'r') as f:
-            stock_pool = [line.strip() for line in f if line.strip()]
+        # Read the entire S&P 500 list
+        constituents_df = pd.read_csv(constituents_path)
+
+        # Read the desired sectors
+        selected_sectors = []
+        if os.path.exists(sectors_path):
+            with open(sectors_path, 'r') as f:
+                selected_sectors = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
+        # Filter by sector if any are selected
+        if selected_sectors:
+            console.print(f"[bold yellow]Filtering for sectors: {', '.join(selected_sectors)}[/bold yellow]")
+            filtered_df = constituents_df[constituents_df['GICS Sector'].isin(selected_sectors)]
+            stock_pool = filtered_df['Symbol'].tolist()
+        else:
+            # Use the full list if no sectors are specified
+            stock_pool = constituents_df['Symbol'].tolist()
+
         if not stock_pool:
-            console.print(f"[bold red]Warning: Stock pool file at '{config_path}' is empty.[/bold red]")
+            console.print(f"[bold red]Warning: No stocks found for the selected criteria.[/bold red]")
             return []
-    except FileNotFoundError:
-        console.print(f"[bold red]Error: Stock pool file not found at '{config_path}'.[/bold red]")
+
+    except FileNotFoundError as e:
+        console.print(f"[bold red]Error: A required data file was not found: {e}.[/bold red]")
         return []
 
     bullish_stocks = []

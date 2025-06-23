@@ -1,0 +1,18 @@
+# Please list the sectors you want to scan, one per line.
+# Leave this file empty to scan all sectors.
+#
+# Available sectors:
+# Communication Services
+# Consumer Discretionary
+# Consumer Staples
+# Energy
+# Financials
+# Health Care
+# Industrials
+# Information Technology
+# Materials
+# Real Estate
+# Utilities
+
+Information Technology
+Health Care
