@@ -30,7 +30,7 @@ def run_scan(verbose: bool = False):
                 console.print(f"  - Analyzing [yellow]{ticker}[/yellow]...")
             
             # Download historical data for the last year
-            stock_data = yf.download(ticker, period="1y", progress=False)
+            stock_data = yf.download(ticker, period="1y", progress=False, auto_adjust=True)
 
             if stock_data.empty:
                 if verbose:

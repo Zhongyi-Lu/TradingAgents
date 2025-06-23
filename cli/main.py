@@ -1,5 +1,6 @@
 from typing import Optional, List
 import datetime
+import os
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -402,9 +403,10 @@ def get_tickers() -> List[str]:
     """Prompt the user to select or enter ticker symbols, with an option to use the Scout scanner."""
     selected_tickers = []
 
-    use_scout = questionary.confirm(
+    scout_answer = questionary.select(
         "Would you like to use the Scout to find potential opportunities?",
-        default=True,
+        choices=["Yes", "No"],
+        default="Yes",
         style=questionary.Style([
             ("questionmark", "fg:yellow bold"),
             ("selected", "fg:green noinherit"),
@@ -413,13 +415,15 @@ def get_tickers() -> List[str]:
         ])
     ).ask()
 
+    use_scout = scout_answer == "Yes"
+
     if use_scout:
         console.print("\n[cyan]Running Scout to find bullish stocks...[/cyan]")
         bullish_stocks = run_scan(verbose=False)
 
         if bullish_stocks:
-            scout_selections = questionary.checkbox(
-                "Scout found the following opportunities. Please select which to analyze:",
+            scout_selection = questionary.select(
+                "Scout found the following opportunities. Please select one to analyze:",
                 choices=bullish_stocks,
                 style=questionary.Style([
                     ("selected", "fg:green noinherit"),
@@ -427,8 +431,8 @@ def get_tickers() -> List[str]:
                     ("pointer", "fg:yellow noinherit"),
                 ])
             ).ask()
-            if scout_selections:
-                selected_tickers.extend(scout_selections)
+            if scout_selection:
+                selected_tickers.append(scout_selection)
         else:
             console.print("\n[yellow]Scout didn't find any stocks matching the criteria.[/yellow]")
 
