@@ -11,24 +11,7 @@ ANALYST_ORDER = [
 ]
 
 
-def get_ticker() -> str:
-    """Prompt the user to enter a ticker symbol."""
-    ticker = questionary.text(
-        "Enter the ticker symbol to analyze:",
-        validate=lambda x: len(x.strip()) > 0 or "Please enter a valid ticker symbol.",
-        style=questionary.Style(
-            [
-                ("text", "fg:green"),
-                ("highlighted", "noinherit"),
-            ]
-        ),
-    ).ask()
 
-    if not ticker:
-        console.print("\n[red]No ticker symbol provided. Exiting...[/red]")
-        exit(1)
-
-    return ticker.strip().upper()
 
 
 def get_analysis_date() -> str:
