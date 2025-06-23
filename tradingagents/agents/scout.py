@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 from rich.console import Console
+import os
 
 console = Console()
 
@@ -17,8 +18,21 @@ def run_scan(verbose: bool = False):
     Returns:
         list: A list of stock tickers that meet the scan criteria.
     """
-    # MVP: Use a hardcoded list of stocks. Future versions could read this from a file.
-    stock_pool = ["AAPL", "GOOGL", "MSFT", "AMZN", "NVDA", "TSLA", "META", "JPM", "V", "JNJ"]
+    # Load stock pool from the configuration file.
+    stock_pool = []
+    # Assuming the script is run from the project root directory.
+    config_path = os.path.join("config", "stock_pool.txt")
+
+    try:
+        with open(config_path, 'r') as f:
+            stock_pool = [line.strip() for line in f if line.strip()]
+        if not stock_pool:
+            console.print(f"[bold red]Warning: Stock pool file at '{config_path}' is empty.[/bold red]")
+            return []
+    except FileNotFoundError:
+        console.print(f"[bold red]Error: Stock pool file not found at '{config_path}'.[/bold red]")
+        return []
+
     bullish_stocks = []
 
     if verbose:
@@ -47,7 +61,7 @@ def run_scan(verbose: bool = False):
             if last_price > sma_200:
                 bullish_stocks.append(ticker)
                 if verbose:
-                    console.print(f"    [green]Bullish signal found for {ticker}! (Price: ${float(last_price):.2f}, 200-SMA: ${float(sma_200):.2f})[/green]")
+                    console.print(f"    [green]Bullish signal found for {ticker}! (Price: ${last_price.item():.2f}, 200-SMA: ${sma_200.item():.2f})[/green]")
 
         except Exception as e:
             if verbose:
