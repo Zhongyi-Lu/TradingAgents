@@ -464,7 +464,7 @@ def get_tickers() -> str:
         console.print("[bold red]No ticker symbol provided. Please enter one.[/bold red]")
 
 
-def get_user_selections():
+def get_user_selections() -> Optional[dict]:
     """Get all user selections before starting the analysis display."""
     # Display ASCII art welcome message
     with open("./cli/static/welcome.txt", "r") as f:
@@ -489,80 +489,74 @@ def get_user_selections():
     )
     console.print(Align.center(welcome_box))
     console.print()  # Add a blank line after the welcome box
-
-    # Create a boxed questionnaire for each step
-    def create_question_box(title, prompt, default=None):
-        box_content = f"[bold]{title}[/bold]\n"
-        box_content += f"[dim]{prompt}[/dim]"
-        if default:
-            box_content += f"\n[dim]Default: {default}[/dim]"
-        return Panel(box_content, border_style="blue", padding=(1, 2))
-
-    # Step 1: Get Tickers
     selected_ticker = get_tickers()
+    if selected_ticker is None:
+        return None
 
-    # Step 2: Analysis date
-    default_date = datetime.datetime.now().strftime("%Y-%m-%d")
-    console.print(
-        create_question_box(
-            "Step 2: Analysis Date",
-            "Enter the analysis date (YYYY-MM-DD)",
-            default_date,
-        )
+    # Step 2: Get Analysis Date
+    box_content = create_question_box(
+        "Step 2: Analysis Date",
+        "Enter the analysis date (YYYY-MM-DD)",
+        f"Default: {datetime.date.today().strftime('%Y-%m-%d')}",
     )
+    console.print(box_content)
     analysis_date = get_analysis_date()
+    if analysis_date is None:
+        return None
 
-    # Step 3: Select analysts
-    console.print(
-        create_question_box(
-            "Step 3: Analysts Team", "Select your LLM analyst agents for the analysis"
-        )
+    # Step 3: Select Analysts
+    box_content = create_question_box(
+        "Step 3: Analysts Team", "Select your LLM analyst agents for the analysis"
     )
+    console.print(box_content)
     selected_analysts = select_analysts()
+    if not selected_analysts:
+        return None
     console.print(
         f"[green]Selected analysts:[/green] {', '.join(analyst.value for analyst in selected_analysts)}"
     )
 
-    # Step 4: Research depth
-    console.print(
-        create_question_box(
-            "Step 4: Research Depth", "Select your research depth level"
-        )
+    # Step 4: Select Research Depth
+    box_content = create_question_box(
+        "Step 4: Research Depth", "Select the depth of the research"
     )
-    selected_research_depth = select_research_depth()
+    console.print(box_content)
+    research_depth = select_research_depth()
+    if research_depth is None:
+        return None
 
-    # Step 5: OpenAI backend
-    console.print(
-        create_question_box(
-            "Step 5: OpenAI backend", "Select which service to talk to"
-        )
+    # Step 5: Select LLM Provider
+    box_content = create_question_box(
+        "Step 5: LLM Provider", "Select your LLM provider for the analysis"
     )
-    selected_llm_provider, backend_url = select_llm_provider()
-    
-    # Step 6: Thinking agents
-    console.print(
-        create_question_box(
-            "Step 6: Thinking Agents", "Select your thinking agents for analysis"
-        )
+    console.print(box_content)
+    provider_selection = select_llm_provider()
+    if provider_selection is None:
+        return None
+    provider, base_url = provider_selection
+
+    # Step 6: Select Thinking Agents
+    box_content = create_question_box(
+        "Step 6: Thinking Agents", "Select your thinking agents for analysis"
     )
-    selected_shallow_thinker = select_shallow_thinking_agent(selected_llm_provider)
-    selected_deep_thinker = select_deep_thinking_agent(selected_llm_provider)
+    console.print(box_content)
+    shallow_agent = select_shallow_thinking_agent(provider)
+    if shallow_agent is None:
+        return None
+    deep_agent = select_deep_thinking_agent(provider)
+    if deep_agent is None:
+        return None
 
     return {
         "ticker": selected_ticker,
         "analysis_date": analysis_date,
         "analysts": selected_analysts,
-        "research_depth": selected_research_depth,
-        "llm_provider": selected_llm_provider.lower(),
-        "backend_url": backend_url,
-        "shallow_thinker": selected_shallow_thinker,
-        "deep_thinker": selected_deep_thinker,
+        "research_depth": research_depth,
+        "provider": provider,
+        "base_url": base_url,
+        "shallow_agent": shallow_agent,
+        "deep_agent": deep_agent,
     }
-
-
-def get_ticker():
-    """Get ticker symbol from user input."""
-    return typer.prompt("", default="SPY")
 
 
 def get_analysis_date():
@@ -809,15 +803,18 @@ def run_analysis():
 
     # First get all user selections
     selections = get_user_selections()
+    if selections is None:
+        console.print("\n[bold yellow]Operation cancelled by user. Exiting.[/bold yellow]")
+        raise typer.Exit()
 
     # Create config with selected research depth
     config = DEFAULT_CONFIG.copy()
     config["max_debate_rounds"] = selections["research_depth"]
     config["max_risk_discuss_rounds"] = selections["research_depth"]
-    config["quick_think_llm"] = selections["shallow_thinker"]
-    config["deep_think_llm"] = selections["deep_thinker"]
-    config["backend_url"] = selections["backend_url"]
-    config["llm_provider"] = selections["llm_provider"].lower()
+    config["quick_think_llm"] = selections["shallow_agent"]
+    config["deep_think_llm"] = selections["deep_agent"]
+    config["backend_url"] = selections["base_url"]
+    config["llm_provider"] = selections["provider"].lower()
 
     # Analyze the selected ticker
     ticker = selections["ticker"]

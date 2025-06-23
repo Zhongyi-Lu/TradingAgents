@@ -14,7 +14,7 @@ ANALYST_ORDER = [
 ]
 
 
-def get_analysis_date() -> str:
+def get_analysis_date() -> Optional[str]:
     """Prompt the user to enter a date in YYYY-MM-DD format."""
     import re
     from datetime import datetime
@@ -41,13 +41,12 @@ def get_analysis_date() -> str:
     ).ask()
 
     if not date:
-        console.print("\n[red]No date provided. Exiting...[/red]")
-        exit(1)
+        return None
 
     return date.strip()
 
 
-def select_analysts() -> List[AnalystType]:
+def select_analysts() -> Optional[List[AnalystType]]:
     """Select analysts using an interactive checkbox."""
     choices = questionary.checkbox(
         "Select Your [Analysts Team]:",
@@ -66,14 +65,10 @@ def select_analysts() -> List[AnalystType]:
         ),
     ).ask()
 
-    if not choices:
-        console.print("\n[red]No analysts selected. Exiting...[/red]")
-        exit(1)
-
     return choices
 
 
-def select_research_depth() -> int:
+def select_research_depth() -> Optional[int]:
     """Select research depth using an interactive selection."""
 
     # Define research depth options with their corresponding values
@@ -98,14 +93,10 @@ def select_research_depth() -> int:
         ),
     ).ask()
 
-    if choice is None:
-        console.print("\n[red]No research depth selected. Exiting...[/red]")
-        exit(1)
-
     return choice
 
 
-def select_shallow_thinking_agent(provider) -> str:
+def select_shallow_thinking_agent(provider) -> Optional[str]:
     """Select shallow thinking llm engine using an interactive selection."""
 
     # Define shallow thinking llm engine options with their corresponding model names
@@ -153,16 +144,10 @@ def select_shallow_thinking_agent(provider) -> str:
         ),
     ).ask()
 
-    if choice is None:
-        console.print(
-            "\n[red]No shallow thinking llm engine selected. Exiting...[/red]"
-        )
-        exit(1)
-
     return choice
 
 
-def select_deep_thinking_agent(provider) -> str:
+def select_deep_thinking_agent(provider) -> Optional[str]:
     """Select deep thinking llm engine using an interactive selection."""
 
     # Define deep thinking llm engine options with their corresponding model names
@@ -181,7 +166,7 @@ def select_deep_thinking_agent(provider) -> str:
             ("Claude Sonnet 3.5 - Highly capable standard model", "claude-3-5-sonnet-latest"),
             ("Claude Sonnet 3.7 - Exceptional hybrid reasoning and agentic capabilities", "claude-3-7-sonnet-latest"),
             ("Claude Sonnet 4 - High performance and excellent reasoning", "claude-sonnet-4-0"),
-            ("Claude Opus 4 - Most powerful Anthropic model", "	claude-opus-4-0"),
+            ("Claude Opus 4 - Most powerful Anthropic model", "\tclaude-opus-4-0"),
         ],
         "google": [
             ("Gemini 2.0 Flash-Lite - Cost efficiency and low latency", "gemini-2.0-flash-lite"),
@@ -214,13 +199,9 @@ def select_deep_thinking_agent(provider) -> str:
         ),
     ).ask()
 
-    if choice is None:
-        console.print("\n[red]No deep thinking llm engine selected. Exiting...[/red]")
-        exit(1)
-
     return choice
 
-def select_llm_provider() -> tuple[str, str]:
+def select_llm_provider() -> Optional[Tuple[str, str]]:
     """Select the OpenAI api url using interactive selection."""
     # Define OpenAI api options with their corresponding endpoints
     BASE_URLS = [
@@ -248,8 +229,7 @@ def select_llm_provider() -> tuple[str, str]:
     ).ask()
     
     if choice is None:
-        console.print("\n[red]no OpenAI backend selected. Exiting...[/red]")
-        exit(1)
+        return None
     
     display_name, url = choice
     print(f"You selected: {display_name}\tURL: {url}")
